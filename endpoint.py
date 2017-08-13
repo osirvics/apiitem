@@ -15,6 +15,9 @@ import httplib2
 from flask import make_response
 import requests
 
+# from apiclient import discovery
+# from oauth2client import client
+
 auth = HTTPBasicAuth()
 
 
@@ -52,23 +55,80 @@ def verify_password(username_or_token_or_email, password):
 def start():
     return render_template('clientOAuth.html')
 
-@app.route('/oauth/<provider>', methods = ['POST'])
-def login(provider):
+@app.route('/api/oauth', methods = ['POST'])
+def login():
     #STEP 1 - Parse the auth code
     auth_code = request.json.get('auth_code')
     ##auth_code = "4/CnMwENqsTrBG9vOnn3g0XCOWRF1-zOpfqPCyYqK11Q0"
     print ("Step 1 - Complete, received auth code %s" % auth_code)
+    #print(auth_code)
+    provider = "google"
     if provider == 'google':
+        # CLIENT_SECRET_FILE = 'client_secret.json'
+        # credentials = client.credentials_from_clientsecrets_and_code(
+        # CLIENT_SECRET_FILE,
+        # ['https://www.googleapis.com/auth/drive.appdata', 'profile', 'email'],
+        # auth_code)
+        # user_id = credentials.id_token['sub']
+        
+
+        # email = credentials.id_token['email']
+        # print(email)
+
+        # #Get user info
+        # h = httplib2.Http()
+        # userinfo_url =  "https://www.googleapis.com/oauth2/v2/userinfo"
+        # params = {'access_token': credentials.access_token, 'alt':'json'}
+        # answer = requests.get(userinfo_url, params=params)
+
+        # data = answer.json()
+        # name = data['name']
+        # picture = data['picture']
+        # email = data['email']
+        # user_id = data["id"]
+        # print(name)
+        # print(picture)
+        # print(email)
+        # print(id)
+
+
+        # name = credentials.id_token['name']
+        # picture = credentials.id_token['picture']
+        # #email = credentials.id_token['email']
+        # user_id = credentials.id_token["id"]
+        
+
+        # user = session.query(User).filter_by(email=email).first()
+        # if not user:
+        #     user = User(username = name, picture = picture, email = email, user_id = user_id)
+        #     session.add(user)
+        #     session.commit()
+		
+		
+		
+	    
+    	
+		
+
+
+
+
+
+
+
+
+
+
         #STEP 2 - Exchange for a token
-        try:
+        #try:
             # Upgrade the authorization code into a credentials object
-            oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
-            oauth_flow.redirect_uri = 'postmessage'
-            credentials = oauth_flow.step2_exchange(auth_code)
-        except FlowExchangeError:
-            response = make_response(json.dumps('Failed to upgrade the authorization code.'), 401)
-            response.headers['Content-Type'] = 'application/json'
-            return response
+        oauth_flow = flow_from_clientsecrets('client_secret.json', scope='')
+        oauth_flow.redirect_uri = 'http://localhost:5000'
+        credentials = oauth_flow.step2_exchange(auth_code)
+        #except FlowExchangeError:
+            #response = make_response(json.dumps('Failed to upgrade the authorization code.'), 401)
+            #response.headers['Content-Type'] = 'application/json'
+            #return response
           
         # Check that the access token is valid.
         access_token = credentials.access_token
@@ -115,12 +175,14 @@ def login(provider):
         email = data['email']
         user_id = data["id"]
         
-        #see if user exists, if it doesn't make a new one
+        # #see if user exists, if it doesn't make a new one
         user = session.query(User).filter_by(email=email).first()
         if not user:
             user = User(username = name, picture = picture, email = email, user_id = user_id)
             session.add(user)
             session.commit()
+
+
 
         #STEP 4 - Make token
         token = user.generate_auth_token(600)
@@ -133,7 +195,7 @@ def login(provider):
     else:
         return 'Unrecoginized Provider'
 
-@app.route('/token')
+@app.route('/api/login')
 @auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()
@@ -241,4 +303,4 @@ def getItem(id):
 if __name__ == '__main__':
     app.debug = False
     #app.config['SECRET_KEY'] = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0')
