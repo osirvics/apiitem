@@ -55,14 +55,13 @@ def verify_password(username_or_token_or_email, password):
 def start():
     return render_template('clientOAuth.html')
 
-@app.route('/api/oauth', methods = ['POST'])
-def login():
+@app.route('/api/oauth/<provider>', methods = ['POST'])
+def login(provider):
     #STEP 1 - Parse the auth code
     auth_code = request.json.get('auth_code')
     ##auth_code = "4/CnMwENqsTrBG9vOnn3g0XCOWRF1-zOpfqPCyYqK11Q0"
     print ("Step 1 - Complete, received auth code %s" % auth_code)
     #print(auth_code)
-    provider = "google"
     if provider == 'google':
         # CLIENT_SECRET_FILE = 'client_secret.json'
         # credentials = client.credentials_from_clientsecrets_and_code(
